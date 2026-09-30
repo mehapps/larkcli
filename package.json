@@ -1,7 +1,7 @@
 {
   "name": "lark-cli",
   "version": "0.1.0",
-  "description": "Control a Hollyland Lark A1 over USB HID",
+  "description": "Control Hollyland Lark wireless mic receivers over USB HID",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
