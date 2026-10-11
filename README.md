@@ -40,7 +40,7 @@ Add `--json` to `status`, `set`, `mute` or `raw` for machine-readable output. `l
 | `eq` | `low`, `bright`, `balanced` | `1`, `2`, `3` | Read only |
 | `voice_mode` | `mono`, `stereo` | `0`, `1` | Read only |
 | `voice_level` | `0`–`5` | the app's steps 1–6 | Read only |
-| `mic_recognition` | `off`, `on` | `0`, `1` | Read only |
+| `mic_recognition` | `off`, `on` | `0`, `1` | Yes (two-mic A1) |
 | `auto_power_off` | `15min`, `never` | `0`, `1` | Read only |
 | `signal_mode` | `normal`, `performance` | `0`, `1` | Shown, not settable |
 | `enhanced_mode` | `off`, `on` | `0`, `1` | Shown, not settable |
@@ -48,6 +48,8 @@ Add `--json` to `status`, `set`, `mute` or `raw` for machine-readable output. `l
 "Read only" means the value names come from Hollyland's app and match what the device reports, but `set` hasn't been tried on hardware yet. `set` always reads the value back and exits with code 2 if the device didn't take it.
 
 The device refuses most settings while every transmitter is off. The indicator and auto power-off still work.
+
+Changing `mic_recognition` on the two-mic A1 requires **both TX1 and TX2 connected**, even when turning it off. If the receiver rejects the change while either mic is offline, the CLI names the offline mic and tells you to power on both microphones and retry. With `--json`, this explanation is included in the `error` field; the command still exits with code 2.
 
 `signal_mode` is the app's "Performance mode", a radio setting the app only shows when Hollyland's server allows it. `enhanced_mode` is a different radio setting the app sets on its own from your country. Both are left read-only so this tool can't put the radio into a mode that isn't allowed where you are.
 
@@ -60,7 +62,7 @@ Verified on a Lark A1 receiver (USB `3547:0407`, firmware 1.0.2.12) with two pai
 - Commands are HID feature reports, report ID 5, padded to 64 bytes:
   `05 03 AA DD <cmd> <len hi> <len lo> <payload…> EF`. The `03` is required; without it the device returns a stale buffer instead of an error.
 - Replies start `05 03 BB DD <cmd> <len hi> <len lo> <payload…>` followed by a checksum byte, which this tool ignores. Requests need no checksum.
-- Each setting has a read opcode (even) and a set opcode one below it (odd). A set takes the same payload the read returns and replies with one status byte: `0` is success, `255` means the target is off.
+- Each setting has a read opcode (even) and a set opcode one below it (odd). A set takes the same payload the read returns and replies with one status byte: `0` is success, `255` means the request was rejected (including when a required transmitter is offline).
 
 | Opcode | Command | Notes |
 |---|---|---|

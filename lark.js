@@ -69,7 +69,7 @@ if (cmd === '--selftest') {
     const s = driver.settings[key];
     if (json) console.log(JSON.stringify(r));
     else console.log(`${key}  ${fmt(s, r.before)} -> ${fmt(s, r.after)}${r.ok ? '' :
-      `   (sent ${r.sent.join(' ')}, reply ${hex(r.ack)}. Most settings need at least one transmitter on)`}`);
+      `   (sent ${r.sent.join(' ')}, reply ${hex(r.ack)}. ${r.error ?? 'Most settings need at least one transmitter on'})`}`);
     if (!r.ok) process.exitCode = 2;
   });
 } else if (cmd === 'mute' || cmd === 'unmute') {

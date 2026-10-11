@@ -86,7 +86,15 @@ const A1 = {
         if (!validBytes(sent)) throw usageError(`bad value for ${key}`);
         const ack = send(A1_OPS[key] - 1, sent).payload;
         const after = read(key);
-        return { setting: key, before, sent, ack, after, ok: ack[0] === 0 && after.join() === sent.join() };
+        const result = { setting: key, before, sent, ack, after, ok: ack[0] === 0 && after.join() === sent.join() };
+        if (!result.ok && key === 'mic_recognition') {
+          const units = a1Units(read('heartbeat'));
+          const offline = units.flatMap((t, i) => t.online ? [] : [`TX${i + 1}`]);
+          if (units.length === 2 && offline.length) {
+            result.error = `Mic recognition requires both TX1 and TX2 to be connected on the two-mic Lark A1. Offline: ${offline.join(', ')}. Power on both microphones and retry.`;
+          }
+        }
+        return result;
       },
       mute(tx, on) {
         const ack = send(A1_MUTE, [tx - 1, on ? 1 : 0]).payload;
